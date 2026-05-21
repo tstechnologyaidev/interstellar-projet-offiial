@@ -109,7 +109,8 @@ export function useServerData() {
                     syncToDisk('is_settings', initialSettings);
                 };
                 loadAdminData();
-  }, []);
+            }
+    }, []);
 
     // Sync state between open tabs in the same browser in real-time
     useEffect(() => {
@@ -133,7 +134,7 @@ export function useServerData() {
             // Clear any pending debounced save timeouts on unmount
             Object.values(timeouts.current).forEach(clearTimeout);
         };
-    }, []);
+   }, []);
 
     const saveData = (key: string, data: any, setter: Function) => {
         // 1. Instantly save to local React state and localStorage for premium, lag-free UI responsiveness
