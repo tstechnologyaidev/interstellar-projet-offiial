@@ -344,18 +344,19 @@ export default function App() {
                         )}
                     </section>
                 );
-        }
+}
     };
 
     if (!settings) {
-    return (
-// Added comment for commit attempt 67
-        Loading...
-      </div>
-    );
-  }
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                {/* Added comment for commit attempt 67 */}
+                Loading...
+            </div>
+        );
+    }
 
-  return (
+    return (
         <div className="min-h-screen bg-[#050505] text-zinc-100 font-sans selection:bg-orange-500/30 selection:text-orange-200">
             {/* Background */}
             <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
