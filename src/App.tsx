@@ -222,7 +222,7 @@ export default function App() {
                                                 <div className="flex flex-col md:flex-row items-center gap-6">
                                                     <div className="w-32 h-32 rounded-3xl bg-zinc-900 border-2 border-white/10 overflow-hidden flex items-center justify-center group-hover:border-orange-500/50 transition-colors flex-shrink-0">
                                                         {rank.icon ? (
-                                                            <img src={rank.icon} alt={rank.name} className="w-full h-full object-contain p-2" />
+                                                            <img src={rank.icon} alt={rank.name} className="object-contain p-2 max-w-[48px] max-h-[48px]" />
                                                         ) : (
                                                             <Shield size={48} className="text-zinc-700" />
                                                         )}
@@ -288,7 +288,7 @@ export default function App() {
                                     <div key={member.id} className="relative bg-white/5 border border-white/5 rounded-3xl p-8 flex flex-col items-center gap-6 group hover:bg-white/[0.08] transition-all">
                                         <div className="w-24 h-24 rounded-full border-4 border-orange-500/20 overflow-hidden group-hover:border-orange-500 transition-colors shadow-2xl">
                                             {member.avatar ? (
-                                                <img src={member.avatar} alt={member.username} className="w-full h-full object-cover" />
+                                                <img src={member.avatar} alt={member.username} className="object-cover max-w-[96px] max-h-[96px]" />
                                             ) : (
                                                 <div className="w-full h-full bg-orange-600/10 flex items-center justify-center text-orange-500 font-bold text-3xl">
                                                     {member.username.charAt(0).toUpperCase()}
