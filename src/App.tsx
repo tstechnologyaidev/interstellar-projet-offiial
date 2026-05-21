@@ -347,7 +347,15 @@ export default function App() {
         }
     };
 
+    if (!settings) {
     return (
+      <div className="min-h-screen flex items-center justify-center bg-[#050505] text-white">
+        Loading...
+      </div>
+    );
+  }
+
+  return (
         <div className="min-h-screen bg-[#050505] text-zinc-100 font-sans selection:bg-orange-500/30 selection:text-orange-200">
             {/* Background */}
             <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
