@@ -1,1 +1,18 @@
-# Interstellar Project Official\n\nA celestial gaming experience crafted for the elite. This React + Vite + Tailwind project showcases a premium UI with admin panel, rank hierarchy, and dynamic content.\n\n## Features\n- Separate admin panel with password and CAPTCHA protection\n- Dynamic rank cards with expandable perks\n- Real‑time server status and copy‑to‑clipboard IP\n- Dark mode, glassmorphism, and animated gradients\n- Full TypeScript support\n\n## Local Development\n```bash\nnpm install\nnpm run dev\n```\n\n## Deployment\nPush to GitHub and deploy with Vercel, Netlify, or GitHub Pages.\n\n---\n© 2026 tstechnologyaidev. All rights reserved.\n
+# Interstellar Project
+
+A premium web application featuring dynamic admin panels, rank cards, and secure authentication.
+
+## Features
+- Separate admin page with password and CAPTCHA protection
+- Rank cards with square image formatting
+- Responsive design with modern UI aesthetics
+- Ready for deployment on Vercel, Netlify, or GitHub Pages
+
+## Setup
+```bash
+npm install
+npm run dev
+```
+
+## Deployment
+Follow the deployment guide in the repository's `README.md`.

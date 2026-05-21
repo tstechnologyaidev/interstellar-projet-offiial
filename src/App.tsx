@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -20,6 +19,8 @@ import { RegisterModal } from './components/RegisterModal';
 import { AdminPanel } from './components/AdminPanel';
 import { AdminAuthModal } from './components/AdminAuthModal';
 import { User } from './types';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
 
 // Using the uploaded image path provided in the prompt context
 const LOGO_URL = "/logo.png";
@@ -304,6 +305,10 @@ export default function App() {
                         </div>
                     </section>
                 );
+            case 'privacy':
+                return <Privacy />;
+            case 'terms':
+                return <Terms />;
             case 'admin':
                 return (
                     <section className="space-y-8 animate-in fade-in duration-1000 max-w-5xl mx-auto">
@@ -449,8 +454,8 @@ export default function App() {
                         <p className="text-zinc-500 text-sm">© 2026 Interstellar Project. Not an official Minecraft product.</p>
                     </div>
                     <div className="flex gap-8 text-xs font-bold uppercase tracking-widest">
-                        <a href="#" className="text-zinc-400 hover:text-white transition-colors">Privacy</a>
-                        <a href="#" className="text-zinc-400 hover:text-white transition-colors">Terms</a>
+                        <button type="button" onClick={() => setActivePage('privacy')} className="text-zinc-400 hover:text-white transition-colors">Privacy</button>
+                        <button type="button" onClick={() => setActivePage('terms')} className="text-zinc-400 hover:text-white transition-colors">Terms</button>
                         <a href={settings.discordLink} className="text-zinc-400 hover:text-white transition-colors">Support</a>
                     </div>
                 </div>
