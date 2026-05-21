@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { NewsItem, Rank, TeamMember, ServerSettings } from '../types';
 
-import defaultNews from '../data/is_news.json';
-import defaultRanks from '../data/is_ranks.json';
-import defaultTeam from '../data/is_team.json';
-import defaultSettings from '../data/is_settings.json';
+const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/tstechnologyaidev/interstellar-projet-offiial/main/data';
+const defaultNewsUrl = `${GITHUB_RAW_BASE}/is_news.json`;
+const defaultRanksUrl = `${GITHUB_RAW_BASE}/is_ranks.json`;
+const defaultTeamUrl = `${GITHUB_RAW_BASE}/is_team.json`;
+const defaultSettingsUrl = `${GITHUB_RAW_BASE}/is_settings.json`;
+
 
 export function useServerData() {
     const [news, setNews] = useState<NewsItem[]>([]);
@@ -24,22 +26,41 @@ export function useServerData() {
         const storedSettings = localStorage.getItem('is_settings');
 
         if (!isAdmin) {
-            // For public users: bypass and clear localStorage caches so they always load the server's files directly
+            // Public users: fetch data from GitHub so everyone sees the same announcements and ranks
             localStorage.removeItem('is_news');
             localStorage.removeItem('is_ranks');
             localStorage.removeItem('is_team');
             localStorage.removeItem('is_settings');
 
-            setNews(defaultNews as NewsItem[]);
-            setRanks(defaultRanks as Rank[]);
-            setTeam(defaultTeam as TeamMember[]);
-            setSettings(defaultSettings as ServerSettings);
+            // Helper to fetch JSON safely
+            const fetchJson = async (url: string) => {
+                try {
+                    const resp = await fetch(url);
+                    if (!resp.ok) throw new Error('Network error');
+                    return (await resp.json()) as any;
+                } catch (e) {
+                    console.error('Failed to fetch', url, e);
+                    return null;
+                }
+            };
+
+            Promise.all([
+                fetchJson(defaultNewsUrl),
+                fetchJson(defaultRanksUrl),
+                fetchJson(defaultTeamUrl),
+                fetchJson(defaultSettingsUrl),
+            ]).then(([newsData, ranksData, teamData, settingsData]) => {
+                setNews((newsData ?? []) as NewsItem[]);
+                setRanks((ranksData ?? []) as Rank[]);
+                setTeam((teamData ?? []) as TeamMember[]);
+                setSettings((settingsData ?? defaultSettings) as ServerSettings);
+            });
         } else {
             // For administrators: load from localStorage to preserve all of their existing modifications
-            let initialNews = defaultNews as NewsItem[];
-            let initialRanks = defaultRanks as Rank[];
-            let initialTeam = defaultTeam as TeamMember[];
-            let initialSettings = defaultSettings as ServerSettings;
+            let initialNews = (await (await fetch(defaultNewsUrl)).json()) as NewsItem[];
+            let initialRanks = (await (await fetch(defaultRanksUrl)).json()) as Rank[];
+            let initialTeam = (await (await fetch(defaultTeamUrl)).json()) as TeamMember[];
+            let initialSettings = (await (await fetch(defaultSettingsUrl)).json()) as ServerSettings;
 
             if (storedNews) {
                 initialNews = JSON.parse(storedNews);
