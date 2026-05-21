@@ -54,7 +54,8 @@ export function useServerData() {
                 setRanks((ranksData ?? []) as Rank[]);
                 setTeam((teamData ?? []) as TeamMember[]);
                 setSettings((settingsData ?? defaultSettings) as ServerSettings);
-                    } else {
+            });
+        } else {
                 // For administrators: load from localStorage to preserve all of their existing modifications
                 const loadAdminData = async () => {
                     let initialNews = (await (await fetch(defaultNewsUrl)).json()) as NewsItem[];
@@ -108,7 +109,7 @@ export function useServerData() {
                     syncToDisk('is_settings', initialSettings);
                 };
                 loadAdminData();
-            }, []);
+              }, []);
 
     // Sync state between open tabs in the same browser in real-time
     useEffect(() => {
