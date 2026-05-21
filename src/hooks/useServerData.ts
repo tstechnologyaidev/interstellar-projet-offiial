@@ -12,7 +12,7 @@ export function useServerData() {
     const [news, setNews] = useState<NewsItem[]>([]);
     const [ranks, setRanks] = useState<Rank[]>([]);
     const [team, setTeam] = useState<TeamMember[]>([]);
-    const [settings, setSettings] = useState<ServerSettings>(defaultSettings as ServerSettings);
+    const [settings, setSettings] = useState<ServerSettings>({} as ServerSettings);
 
     const timeouts = useRef<Record<string, any>>({});
 
