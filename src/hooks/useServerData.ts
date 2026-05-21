@@ -109,7 +109,7 @@ export function useServerData() {
                     syncToDisk('is_settings', initialSettings);
                 };
                 loadAdminData();
-              }, []);
+  }, []);
 
     // Sync state between open tabs in the same browser in real-time
     useEffect(() => {
