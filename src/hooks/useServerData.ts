@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { NewsItem, Rank, TeamMember, ServerSettings } from '../types';
 
-const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/tstechnologyaidev/interstellar-projet-offiial/main/data';
+const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/tstechnologyaidev/interstellar-project-official/main/data';
 const defaultNewsUrl = `${GITHUB_RAW_BASE}/is_news.json`;
 const defaultRanksUrl = `${GITHUB_RAW_BASE}/is_ranks.json`;
 const defaultTeamUrl = `${GITHUB_RAW_BASE}/is_team.json`;
@@ -53,7 +53,7 @@ export function useServerData() {
                 setNews((newsData ?? []) as NewsItem[]);
                 setRanks((ranksData ?? []) as Rank[]);
                 setTeam((teamData ?? []) as TeamMember[]);
-                setSettings((settingsData ?? defaultSettings) as ServerSettings);
+                setSettings((settingsData ?? {}) as ServerSettings);
             });
         } else {
                 // For administrators: load from localStorage to preserve all of their existing modifications
