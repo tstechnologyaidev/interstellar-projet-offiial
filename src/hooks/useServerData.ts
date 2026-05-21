@@ -1,179 +1,83 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { NewsItem, Rank, TeamMember, ServerSettings } from '../types';
-
-const defaultSettings: ServerSettings = {
-    discordLink: "https://discord.gg/SKmmxChE",
-    serverIp: "N/A",
-};
-
-    const [settings, setSettings] = useState<ServerSettings>(defaultSettings);
-const defaultNewsUrl = `${GITHUB_RAW_BASE}/is_news.json`;
-const defaultRanksUrl = `${GITHUB_RAW_BASE}/is_ranks.json`;
-const defaultTeamUrl = `${GITHUB_RAW_BASE}/is_team.json`;
-const defaultSettingsUrl = `${GITHUB_RAW_BASE}/is_settings.json`;
-
+import { supabase } from '../lib/supabaseClient';
 
 export function useServerData() {
-    const [news, setNews] = useState<NewsItem[]>([]);
-    const [ranks, setRanks] = useState<Rank[]>([]);
-    const [team, setTeam] = useState<TeamMember[]>([]);
-    const [settings, setSettings] = useState<ServerSettings>({} as ServerSettings);
+  const [news, setNews] = useState<NewsItem[]>([]);
+  const [ranks, setRanks] = useState<Rank[]>([]);
+  const [team, setTeam] = useState<TeamMember[]>([]);
+  const [settings, setSettings] = useState<ServerSettings>(null as any);
 
-    const timeouts = useRef<Record<string, any>>({});
+  // Load initial data from Supabase
+  const loadInitialData = async () => {
+    const [{ data: newsData }, { data: ranksData }, { data: teamData }, { data: settingsData }] = await Promise.all([
+      supabase.from('news').select('*'),
+      supabase.from('ranks').select('*'),
+      supabase.from('team').select('*'),
+      supabase.from('settings').select('*').single()
+    ]);
+    setNews(newsData as NewsItem[]);
+    setRanks(ranksData as Rank[]);
+    setTeam(teamData as TeamMember[]);
+    setSettings(settingsData as ServerSettings);
+  };
 
-    useEffect(() => {
-        const storedUser = localStorage.getItem('is_current_user');
-        const isAdmin = storedUser ? JSON.parse(storedUser)?.role === 'admin' : false;
-
-        const storedNews = localStorage.getItem('is_news');
-        const storedRanks = localStorage.getItem('is_ranks');
-        const storedTeam = localStorage.getItem('is_team');
-        const storedSettings = localStorage.getItem('is_settings');
-
-        if (!isAdmin) {
-            // Public users: fetch data from GitHub so everyone sees the same announcements and ranks
-            localStorage.removeItem('is_news');
-            localStorage.removeItem('is_ranks');
-            localStorage.removeItem('is_team');
-            localStorage.removeItem('is_settings');
-
-            // Helper to fetch JSON safely
-            const fetchJson = async (url: string) => {
-                try {
-                    const resp = await fetch(url);
-                    if (!resp.ok) throw new Error('Network error');
-                    return (await resp.json()) as any;
-                } catch (e) {
-                    console.error('Failed to fetch', url, e);
-                    return null;
-                }
-            };
-
-            Promise.all([
-                fetchJson(defaultNewsUrl),
-                fetchJson(defaultRanksUrl),
-                fetchJson(defaultTeamUrl),
-                fetchJson(defaultSettingsUrl),
-            ]).then(([newsData, ranksData, teamData, settingsData]) => {
-                setNews((newsData ?? []) as NewsItem[]);
-                setRanks((ranksData ?? []) as Rank[]);
-                setTeam((teamData ?? []) as TeamMember[]);
-                setSettings((settingsData ?? {}) as ServerSettings);
-            });
-        } else {
-                // For administrators: load from localStorage to preserve all of their existing modifications
-                const loadAdminData = async () => {
-                    let initialNews = (await (await fetch(defaultNewsUrl)).json()) as NewsItem[];
-                    let initialRanks = (await (await fetch(defaultRanksUrl)).json()) as Rank[];
-                    let initialTeam = (await (await fetch(defaultTeamUrl)).json()) as TeamMember[];
-                    let initialSettings = (await (await fetch(defaultSettingsUrl)).json()) as ServerSettings;
-
-                    if (storedNews) {
-                        initialNews = JSON.parse(storedNews);
-                        setNews(initialNews);
-                    } else {
-                        setNews(initialNews);
-                        localStorage.setItem('is_news', JSON.stringify(initialNews));
-                    }
-
-                    if (storedRanks) {
-                        initialRanks = JSON.parse(storedRanks);
-                        setRanks(initialRanks);
-                    } else {
-                        setRanks(initialRanks);
-                        localStorage.setItem('is_ranks', JSON.stringify(initialRanks));
-                    }
-
-                    if (storedTeam) {
-                        initialTeam = JSON.parse(storedTeam);
-                        setTeam(initialTeam);
-                    } else {
-                        setTeam(initialTeam);
-                        localStorage.setItem('is_team', JSON.stringify(initialTeam));
-                    }
-
-                    if (storedSettings) {
-                        initialSettings = JSON.parse(storedSettings);
-                        setSettings(initialSettings);
-                    } else {
-                        setSettings(initialSettings);
-                        localStorage.setItem('is_settings', JSON.stringify(initialSettings));
-                    }
-
-                    // Sync active admin localStorage changes to the server once on mount
-                    const syncToDisk = (key: string, data: any) => {
-                        fetch('/api/save', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ key, data })
-                        }).catch(() => {});
-                    };
-                    syncToDisk('is_news', initialNews);
-                    syncToDisk('is_ranks', initialRanks);
-                    syncToDisk('is_team', initialTeam);
-                    syncToDisk('is_settings', initialSettings);
-                };
-                loadAdminData();
-            }
-    }, []);
-
-    // Sync state between open tabs in the same browser in real-time
-    useEffect(() => {
-        const handleStorageChange = (e: StorageEvent) => {
-            if (e.newValue) {
-                try {
-                    const parsed = JSON.parse(e.newValue);
-                    if (e.key === 'is_news') setNews(parsed);
-                    if (e.key === 'is_ranks') setRanks(parsed);
-                    if (e.key === 'is_team') setTeam(parsed);
-                    if (e.key === 'is_settings') setSettings(parsed);
-                } catch (err) {
-                    console.error('Error parsing storage event:', err);
-                }
-            }
-        };
-
-        window.addEventListener('storage', handleStorageChange);
-        return () => {
-            window.removeEventListener('storage', handleStorageChange);
-            // Clear any pending debounced save timeouts on unmount
-            Object.values(timeouts.current).forEach(clearTimeout);
-        };
-   }, []);
-
-    const saveData = (key: string, data: any, setter: Function) => {
-        // 1. Instantly save to local React state and localStorage for premium, lag-free UI responsiveness
-        localStorage.setItem(key, JSON.stringify(data));
-        setter(data);
-
-        // 2. Clear previous write timer for this key (debouncing the keystroke)
-        if (timeouts.current[key]) {
-            clearTimeout(timeouts.current[key]);
-        }
-
-        // 3. Debounce filesystem save operation by 1 second to prevent server writes/HMR while the admin is actively typing
-        timeouts.current[key] = setTimeout(() => {
-            fetch('/api/save', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ key, data }),
-            }).catch(err => {
-                console.log('FSDatabaseSync: Running in production/static environment.', err);
-            });
-        }, 1000);
+  useEffect(() => {
+    loadInitialData();
+    // Real‑time subscriptions
+    const newsChannel = supabase.channel('public:news')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'news' }, () => {
+        supabase.from('news').select('*').then(res => setNews(res.data as NewsItem[]));
+      })
+      .subscribe();
+    const ranksChannel = supabase.channel('public:ranks')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ranks' }, () => {
+        supabase.from('ranks').select('*').then(res => setRanks(res.data as Rank[]));
+      })
+      .subscribe();
+    const teamChannel = supabase.channel('public:team')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'team' }, () => {
+        supabase.from('team').select('*').then(res => setTeam(res.data as TeamMember[]));
+      })
+      .subscribe();
+    const settingsChannel = supabase.channel('public:settings')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, () => {
+        supabase.from('settings').select('*').single().then(res => setSettings(res.data as ServerSettings));
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(newsChannel);
+      supabase.removeChannel(ranksChannel);
+      supabase.removeChannel(teamChannel);
+      supabase.removeChannel(settingsChannel);
     };
+  }, []);
 
-    return {
-        news,
-        setNews: (data: NewsItem[]) => saveData('is_news', data, setNews),
-        ranks,
-        setRanks: (data: Rank[]) => saveData('is_ranks', data, setRanks),
-        team,
-        setTeam: (data: TeamMember[]) => saveData('is_team', data, setTeam),
-        settings,
-        setSettings: (data: ServerSettings) => saveData('is_settings', data, setSettings),
-    };
+  // Save functions – write through Supabase and update local state
+  const saveData = async (table: string, data: any, setter: Function) => {
+    if (Array.isArray(data)) {
+      // Replace all rows: delete then insert
+      await supabase.from(table).delete().neq('id', '');
+      const { error } = await supabase.from(table).insert(data as any);
+      if (error) console.error('Supabase upsert error', error);
+    } else {
+      const { error } = await supabase.from(table).upsert(data as any);
+      if (error) console.error('Supabase upsert error', error);
+    }
+    setter(data);
+  };
+
+  return {
+    news,
+    setNews: (data: NewsItem[]) => saveData('news', data, setNews),
+    ranks,
+    setRanks: (data: Rank[]) => saveData('ranks', data, setRanks),
+    team,
+    setTeam: (data: TeamMember[]) => saveData('team', data, setTeam),
+    settings,
+    setSettings: (data: ServerSettings) => saveData('settings', data, setSettings),
+  };
 }
+
+
 

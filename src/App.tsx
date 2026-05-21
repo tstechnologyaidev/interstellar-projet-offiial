@@ -349,7 +349,7 @@ export default function App() {
 
     if (!settings) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#050505] text-white">
+// Added comment for commit attempt 67
         Loading...
       </div>
     );
