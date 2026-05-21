@@ -54,60 +54,61 @@ export function useServerData() {
                 setRanks((ranksData ?? []) as Rank[]);
                 setTeam((teamData ?? []) as TeamMember[]);
                 setSettings((settingsData ?? defaultSettings) as ServerSettings);
-            });
-        } else {
-            // For administrators: load from localStorage to preserve all of their existing modifications
-            let initialNews = (await (await fetch(defaultNewsUrl)).json()) as NewsItem[];
-            let initialRanks = (await (await fetch(defaultRanksUrl)).json()) as Rank[];
-            let initialTeam = (await (await fetch(defaultTeamUrl)).json()) as TeamMember[];
-            let initialSettings = (await (await fetch(defaultSettingsUrl)).json()) as ServerSettings;
+                    } else {
+                // For administrators: load from localStorage to preserve all of their existing modifications
+                const loadAdminData = async () => {
+                    let initialNews = (await (await fetch(defaultNewsUrl)).json()) as NewsItem[];
+                    let initialRanks = (await (await fetch(defaultRanksUrl)).json()) as Rank[];
+                    let initialTeam = (await (await fetch(defaultTeamUrl)).json()) as TeamMember[];
+                    let initialSettings = (await (await fetch(defaultSettingsUrl)).json()) as ServerSettings;
 
-            if (storedNews) {
-                initialNews = JSON.parse(storedNews);
-                setNews(initialNews);
-            } else {
-                setNews(initialNews);
-                localStorage.setItem('is_news', JSON.stringify(initialNews));
-            }
+                    if (storedNews) {
+                        initialNews = JSON.parse(storedNews);
+                        setNews(initialNews);
+                    } else {
+                        setNews(initialNews);
+                        localStorage.setItem('is_news', JSON.stringify(initialNews));
+                    }
 
-            if (storedRanks) {
-                initialRanks = JSON.parse(storedRanks);
-                setRanks(initialRanks);
-            } else {
-                setRanks(initialRanks);
-                localStorage.setItem('is_ranks', JSON.stringify(initialRanks));
-            }
+                    if (storedRanks) {
+                        initialRanks = JSON.parse(storedRanks);
+                        setRanks(initialRanks);
+                    } else {
+                        setRanks(initialRanks);
+                        localStorage.setItem('is_ranks', JSON.stringify(initialRanks));
+                    }
 
-            if (storedTeam) {
-                initialTeam = JSON.parse(storedTeam);
-                setTeam(initialTeam);
-            } else {
-                setTeam(initialTeam);
-                localStorage.setItem('is_team', JSON.stringify(initialTeam));
-            }
+                    if (storedTeam) {
+                        initialTeam = JSON.parse(storedTeam);
+                        setTeam(initialTeam);
+                    } else {
+                        setTeam(initialTeam);
+                        localStorage.setItem('is_team', JSON.stringify(initialTeam));
+                    }
 
-            if (storedSettings) {
-                initialSettings = JSON.parse(storedSettings);
-                setSettings(initialSettings);
-            } else {
-                setSettings(initialSettings);
-                localStorage.setItem('is_settings', JSON.stringify(initialSettings));
-            }
+                    if (storedSettings) {
+                        initialSettings = JSON.parse(storedSettings);
+                        setSettings(initialSettings);
+                    } else {
+                        setSettings(initialSettings);
+                        localStorage.setItem('is_settings', JSON.stringify(initialSettings));
+                    }
 
-            // Sync active admin localStorage changes to the server once on mount
-            const syncToDisk = (key: string, data: any) => {
-                fetch('/api/save', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ key, data })
-                }).catch(() => {});
-            };
-            syncToDisk('is_news', initialNews);
-            syncToDisk('is_ranks', initialRanks);
-            syncToDisk('is_team', initialTeam);
-            syncToDisk('is_settings', initialSettings);
-        }
-    }, []);
+                    // Sync active admin localStorage changes to the server once on mount
+                    const syncToDisk = (key: string, data: any) => {
+                        fetch('/api/save', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ key, data })
+                        }).catch(() => {});
+                    };
+                    syncToDisk('is_news', initialNews);
+                    syncToDisk('is_ranks', initialRanks);
+                    syncToDisk('is_team', initialTeam);
+                    syncToDisk('is_settings', initialSettings);
+                };
+                loadAdminData();
+            }, []);
 
     // Sync state between open tabs in the same browser in real-time
     useEffect(() => {
