@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-export const Terms: React.FC = () => {
+export default function Terms() {
   return (
     <section className="flex flex-col items-center text-center space-y-6 py-12 min-h-[60vh] animate-in fade-in duration-1000">
       <motion.h1
